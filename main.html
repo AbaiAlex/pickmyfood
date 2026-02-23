@@ -1,0 +1,1670 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title id="appName"></title>
+  <style>
+    :root{
+      --bg:#070b16;
+      --bg2:#0c1230;
+      --panel:#0f1836;
+      --text:#e8eefc;
+      --muted:#aab6d6;
+      --accent:#5ee1a0;
+      --danger:#ff5c7a;
+      --border:rgba(255,255,255,0.12);
+      --control-bg: rgba(255,255,255,0.06);
+      --control-bg-strong: rgba(255,255,255,0.12);
+      --control-text: var(--text);
+      --shadow: 0 12px 36px rgba(0,0,0,0.35);
+      --link: color-mix(in oklab, #60a5fa, #ffffff 10%);
+    }
+
+    [data-theme="light"]{
+      --bg:#f6f7ff;
+      --bg2:#ffffff;
+      --panel:#ffffff;
+      --text:#101423;
+      --muted:#4b5877;
+      --accent:#128a53;
+      --danger:#c92a42;
+      --border: rgba(16,20,35,0.14);
+      --control-bg: rgba(16,20,35,0.04);
+      --control-bg-strong: rgba(16,20,35,0.06);
+      --control-text: var(--text);
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --link: #2563eb;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 10% 0%, color-mix(in oklab, #7c3aed, transparent 35%) 0%, transparent 60%),
+        radial-gradient(900px 520px at 95% 10%, color-mix(in oklab, #06b6d4, transparent 40%) 0%, transparent 65%),
+        radial-gradient(900px 520px at 60% 110%, color-mix(in oklab, #22c55e, transparent 45%) 0%, transparent 70%),
+        radial-gradient(900px 520px at 40% 40%, color-mix(in oklab, #f97316, transparent 55%) 0%, transparent 70%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
+      min-height: 100vh;
+    }
+
+    header{padding:18px 18px 8px;max-width:1200px;margin:0 auto;}
+    h1{margin:0 0 6px;font-size:20px;}
+    .sub{color:var(--muted);font-size:13px;line-height:1.35;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
+    .sub-left{flex: 1 1 auto;}
+    .sub-right{display:flex;gap:10px;align-items:center;flex: 0 0 auto;}
+    .theme-toggle{display:flex;gap:8px;align-items:center;}
+    .theme-toggle label{margin:0;color:var(--muted);font-size:12px;}
+    .theme-toggle select{padding:8px 10px;border-radius:10px;}
+
+    main{
+      max-width:1200px;margin:0 auto;padding:12px 18px 10px;
+      display:grid;grid-template-columns:1.2fr 0.8fr;gap:14px;
+    }
+
+    .card{
+      background: color-mix(in oklab, var(--panel), #000 2%);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    label{font-size:13px;color:var(--muted);}
+    input,select,button{
+      font:inherit;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: var(--control-bg);
+      color: var(--control-text);
+      padding:10px 10px;
+      outline:none;
+    }
+    select{ background: var(--control-bg-strong); }
+    option{ background: color-mix(in oklab, var(--panel), #000 10%); color: var(--text); }
+    [data-theme="light"] option{ background:#fff; color:#101423; }
+    input::placeholder{color: color-mix(in oklab, var(--muted), transparent 30%);}
+
+    button{
+      cursor:pointer;
+      background: color-mix(in oklab, var(--accent), transparent 88%);
+      border-color: color-mix(in oklab, var(--accent), transparent 60%);
+    }
+    button:hover{background: color-mix(in oklab, var(--accent), transparent 82%);}
+    button.danger{
+      background: color-mix(in oklab, var(--danger), transparent 90%);
+      border-color: color-mix(in oklab, var(--danger), transparent 60%);
+    }
+    button.danger:hover{background: color-mix(in oklab, var(--danger), transparent 84%);}
+    button.secondary{
+      background: color-mix(in oklab, var(--muted), transparent 88%);
+      border-color: color-mix(in oklab, var(--muted), transparent 65%);
+    }
+    button.secondary:hover{background: color-mix(in oklab, var(--muted), transparent 82%);}
+
+    a.link{
+      color: var(--link);
+      text-decoration: none;
+    }
+    a.link:hover{
+      text-decoration: underline;
+    }
+
+    .divider{height:1px;background: color-mix(in oklab, var(--border), transparent 30%);margin:12px 0;}
+    .small{font-size:12px;color:var(--muted);}
+    .help{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4;}
+    .checkbox{display:flex;gap:8px;align-items:center;}
+    .checkbox input{transform:scale(1.1);}
+    .section-title{font-weight:900;margin:0 0 6px;}
+
+    .toolbar{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:end;justify-content:space-between;
+    }
+    .toolbar-left{display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
+    .toolbar-right{display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap:10px;
+      align-items:end;
+    }
+    .filters > div{min-width: 220px;}
+    @media (max-width: 980px){
+      main{grid-template-columns:1fr;}
+      .filters{grid-template-columns: 1fr; }
+      .filters > div{min-width: 0;}
+    }
+
+    .list{margin-top:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .list header{
+      padding:10px 12px;
+      background: color-mix(in oklab, var(--panel), #000 4%);
+      border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+    }
+
+    ul{margin:0;padding:0;list-style:none;max-height:430px;overflow:auto;}
+    li{
+      display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+      padding:10px 12px;border-bottom:1px solid color-mix(in oklab, var(--border), transparent 55%);
+    }
+    li:last-child{border-bottom:none;}
+    li .name{font-weight:900;}
+    li .meta{font-size:12px;color:var(--muted);line-height:1.35;}
+    .pillrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+    .pill{font-size:12px;border:1px solid var(--border);padding:3px 8px;border-radius:999px;color:var(--muted);white-space:nowrap;}
+    .actions{display:flex;gap:8px;justify-content:flex-end;}
+
+    .result{font-size:24px;font-weight:950;color:var(--accent);margin:8px 0 6px;}
+    .result-box{
+      border: 1px solid color-mix(in oklab, var(--border), transparent 20%);
+      border-radius: 12px;
+      padding: 12px;
+      background: color-mix(in oklab, var(--panel), #000 6%);
+    }
+
+    dialog{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background: color-mix(in oklab, var(--panel), #000 4%);
+      color:var(--text);
+      padding:14px;max-width:760px;width:calc(100% - 24px);
+      box-shadow: var(--shadow);
+    }
+    dialog::backdrop{background:rgba(0,0,0,0.55);}
+    [data-theme="light"] dialog::backdrop{background:rgba(0,0,0,0.25);}
+
+    .dialog-title{font-weight:900;margin:0 0 10px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;}
+    .grid2 > div{min-width: 220px;}
+    @media (max-width: 700px){
+      .grid2{grid-template-columns:1fr;}
+      .grid2 > div{min-width: 0;}
+    }
+
+    .tagbox{border:1px solid var(--border);border-radius:12px;padding:10px;background: color-mix(in oklab, var(--panel), #000 6%);}
+    .tagbox h3{margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:900;}
+    .tagchips{display:flex;gap:6px;flex-wrap:wrap;}
+    .chip{border:1px solid var(--border);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--text);background:var(--control-bg);}
+    .chip button{padding:0 6px;border-radius:999px;margin-left:6px;background:transparent;border:1px solid color-mix(in oklab, var(--border), transparent 40%);color:var(--muted);}
+    .chip button:hover{border-color: color-mix(in oklab, var(--danger), transparent 40%);color:var(--danger);}
+
+    .weights-quick-add{
+      display:grid;
+      grid-template-columns: 1.2fr 0.6fr auto;
+      gap:10px;
+      align-items:end;
+      margin-top: 10px;
+    }
+    @media (max-width: 700px){
+      .weights-quick-add{grid-template-columns:1fr;}
+    }
+    .weights-list{display:grid;gap:10px;margin-top: 12px;}
+    .weight-row{
+      display:grid;
+      grid-template-columns: 1.2fr 0.6fr 90px;
+      gap:10px;
+      align-items:end;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background: color-mix(in oklab, var(--panel), #000 6%);
+    }
+    .weight-row .idx{font-size:12px;color:var(--muted);margin-bottom: 4px;}
+    @media (max-width: 700px){
+      .weight-row{grid-template-columns: 1fr;}
+    }
+
+    footer{
+      max-width:1200px;
+      margin: 0 auto;
+      padding: 0 18px 24px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    footer .foot{
+      border-top: 1px solid color-mix(in oklab, var(--border), transparent 15%);
+      padding-top: 12px;
+      display:flex;
+      gap: 12px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: start;
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+    .tipbox{
+      flex: 1 1 420px;
+      max-width: 520px;
+      border: 1px solid color-mix(in oklab, var(--border), transparent 20%);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: color-mix(in oklab, var(--panel), #000 6%);
+    }
+    .tip-title{font-weight: 900; color: var(--text); margin-bottom: 6px;}
+    .tip-text{color: var(--muted); opacity: 1; transition: opacity 650ms ease; min-height: 34px;}
+    .tip-text.fade-out{ opacity: 0; }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1 id="appName">PickMyFood</h1>
+  <div class="sub">
+    <div class="sub-left">
+      Étterem sorsoló • Linkekkel • Kategóriákkal • Súlyszintekkel
+    </div>
+    <div class="sub-right">
+      <div class="theme-toggle">
+        <label for="themeSelect">Téma</label>
+        <select id="themeSelect">
+          <option value="dark">Sötét</option>
+          <option value="light">Világos</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button id="openAddBtn" style="font-weight:900;">+ Új étterem</button>
+        <button id="openCategoriesBtn" class="secondary">Kategóriák kezelése</button>
+        <button id="openWeightsBtn" class="secondary">Súlyszintek kezelése</button>
+      </div>
+
+      <div class="toolbar-right">
+        <button id="exportBtn">Mentés (JSON)</button>
+        <button id="importBtn">Betöltés (JSON)</button>
+        <button id="resetBtn" class="danger">Lista törlése</button>
+        <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="filters">
+      <div>
+        <label for="searchName">Keresés névben</label><br/>
+        <input id="searchName" placeholder="pl. pizza, kfc, ..." style="width:100%;" />
+      </div>
+
+      <div>
+        <label for="filterCategory">Szűrés kategóriára</label><br/>
+        <select id="filterCategory" style="width:100%;"></select>
+      </div>
+
+      <div>
+        <label for="sortSelect">Rendezés</label><br/>
+        <select id="sortSelect" style="width:100%;">
+          <option value="NAME_ASC">ABC (A→Z)</option>
+          <option value="NAME_DESC">ABC (Z→A)</option>
+          <option value="WEIGHT_DESC">Súly (nagy→kicsi)</option>
+          <option value="WEIGHT_ASC">Súly (kicsi→nagy)</option>
+          <option value="CATEGORY_ASC">Kategória (A→Z)</option>
+          <option value="CREATED_DESC">Létrehozás (új→régi)</option>
+          <option value="CREATED_ASC">Létrehozás (régi→új)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list">
+      <header>
+        <div>
+          <strong>Lista</strong>
+          <span class="small">Dupla katt = szerkesztés</span>
+        </div>
+        <div class="small" id="countInfo"></div>
+      </header>
+      <ul id="list"></ul>
+    </div>
+  </section>
+
+  <aside class="card">
+    <div class="section-title">Sorsolás</div>
+
+    <div class="filters" style="grid-template-columns: 1fr; gap:10px;">
+      <div>
+        <label for="pickModeSelect">Sorsolási mód</label><br/>
+        <select id="pickModeSelect" style="width:100%;">
+          <option value="ALL_UNWEIGHTED">Összes étterem (egyenlő esély)</option>
+          <option value="ALL_WEIGHTED">Összes étterem (súlyozott)</option>
+          <option value="RANDOM_CATEGORY">Random kategória</option>
+          <option value="IN_CATEGORY">Étterem adott kategóriából</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="modeSettings" style="margin-top:10px; display:none;">
+      <div id="categorySetting" style="display:none;">
+        <label for="pickCategorySelect">Kategória</label><br/>
+        <select id="pickCategorySelect" style="width:100%;"></select>
+        <div class="help">Ebben a módban csak a kiválasztott kategóriába tartozó éttermek közül sorsol.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="toolbar" style="align-items:center;">
+        <button id="pick1Btn" style="flex:1; padding:12px 10px; font-weight:900;">Sorsolj 1-et</button>
+        <button id="pick3Btn" style="flex:1; padding:12px 10px; font-weight:900;">Sorsolj 3-at</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result-box">
+      <div class="small">Eredmény</div>
+      <div class="result" id="result">—</div>
+      <div class="small" id="resultMeta">Válassz módot, aztán sorsolj.</div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="small">Súlyszintek: <span id="weightsLabel"></span></div>
+  </aside>
+</main>
+
+<footer>
+  <div class="foot">
+    <div style="flex: 1 1 340px;">
+      <div><strong id="appVersion"></strong></div>
+      <div>Készítette: <strong id="appAuthor"></strong></div>
+      <div class="small" id="legalLine"></div>
+    </div>
+
+    <div class="tipbox">
+      <span class="tip-title">Tipp</span>
+      &nbsp;
+      &nbsp;
+      <span class="tip-text" id="tipText"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- New category -->
+<dialog id="newCategoryDialog">
+  <p class="dialog-title">Új kategória hozzáadása</p>
+  <div>
+    <label for="newCategoryName">Kategória neve</label><br/>
+    <input id="newCategoryName" placeholder="pl. pizza / ázsiai / olcsó" style="width:100%;" />
+    <div class="help">Max 30 kategória. A név kisbetűsítve lesz.</div>
+  </div>
+  <div class="divider"></div>
+  <div class="toolbar-right" style="justify-content:end;">
+    <button id="newCategoryCancelBtn" class="danger">Mégse</button>
+    <button id="newCategorySaveBtn">Hozzáadás</button>
+  </div>
+</dialog>
+
+<!-- Add restaurant -->
+<dialog id="addDialog">
+  <p class="dialog-title">Új étterem felvétele</p>
+
+  <div class="grid2">
+    <div>
+      <label for="addName">Név</label><br/>
+      <input id="addName" placeholder="pl. KFC, Trattoria..." style="width:100%;" /><br/>
+      <div class="help">Add meg az étterem nevét.</div>
+    </div>
+    <div>
+      <label for="addWeightLevel">Súly szint</label><br/>
+      <select id="addWeightLevel" style="width:100%;"></select>
+      <div class="help">Válassz súlyszintet az étteremhez.</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="grid2">
+    <div>
+      <label for="addUrl">Rendelési link (opcionális)</label><br/>
+      <input id="addUrl" placeholder="https://..." style="width:100%;" />
+      <div class="help">Ha megadod, a listában a név kattintható lesz.</div>
+    </div>
+    <div>
+      <div class="help">Tipp: A linket érdemes “rendelés” oldalra állítani (Foodora/Wolt/saját oldal).</div><br/>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tagbox">
+    <div><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;">(max 5)</span></div>
+    <div class="filters" style="grid-template-columns: 1fr auto auto;">
+      <div style="min-width: 240px;">
+        <label for="addCategorySelect">Válassz kategóriát</label><br/>
+        <select id="addCategorySelect" style="width:100%;"></select>
+      </div>
+      <div style="min-width: 120px;">
+        <label>&nbsp;</label><br/>
+        <button id="addCategoryBtn" class="secondary" style="width:100%;">+ Hozzáad</button>
+      </div>
+      <div style="min-width: 160px;">
+        <label>&nbsp;</label><br/>
+        <button id="addNewCategoryBtn" class="secondary" style="width:100%;">+ Új kategória</button>
+      </div>
+    </div>
+    <div class="help">Egy étteremhez legfeljebb 5 kategória állítható be.</div>
+    <div class="tagchips" id="addSelectedCategories" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="toolbar-right" style="justify-content:end;">
+    <button id="addCancelBtn" class="danger">Mégse</button>
+    <button id="addSaveBtn">Hozzáadás</button>
+  </div>
+</dialog>
+
+<!-- Edit restaurant -->
+<dialog id="editDialog">
+  <p class="dialog-title">Étterem szerkesztése</p>
+
+  <div class="grid2">
+    <div>
+      <label for="editName">Név</label><br/>
+      <input id="editName" style="width:100%;" />
+    </div>
+    <div>
+      <label for="editUrl">Rendelési link (opcionális)</label><br/>
+      <input id="editUrl" placeholder="https://..." style="width:100%;" />
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="grid2">
+    <div>
+      <label for="editWeightLevel">Súly szint</label><br/>
+      <select id="editWeightLevel" style="width:100%;"></select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tagbox">
+    <h3><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;">(max 3)</span></h3>
+    <div class="filters" style="grid-template-columns: 1fr auto auto;">
+      <div style="min-width: 240px;">
+        <label for="editCategorySelect">Válassz kategóriát</label><br/>
+        <select id="editCategorySelect" style="width:100%;"></select>
+      </div>
+      <div style="min-width: 120px;">
+        <label>&nbsp;</label><br/>
+        <button id="editCategoryBtn" class="secondary" style="width:100%;">+ Hozzáad</button>
+      </div>
+      <div style="min-width: 160px;">
+        <label>&nbsp;</label><br/>
+        <button id="editNewCategoryBtn" class="secondary" style="width:100%;">+ Új kategória</button>
+      </div>
+    </div>
+    <div class="help">Egy étteremhez legfeljebb 3 kategória állítható be.</div>
+    <div class="tagchips" id="editSelectedCategories" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="toolbar-right" style="justify-content:end;">
+    <button id="editDeleteBtn" class="danger" style="margin-right:auto;">Törlés</button>
+    <button id="editCancelBtn" class="danger">Mégse</button>
+    <button id="editSaveBtn">Mentés</button>
+  </div>
+</dialog>
+
+<!-- Manage categories -->
+<dialog id="categoriesDialog">
+  <p class="dialog-title">Kategóriák kezelése</p>
+  <div class="filters" style="grid-template-columns: 1fr auto; align-items:end;">
+    <div style="width:100%;">
+      <label for="catNewName">Új kategória</label><br/>
+      <div style="display:flex;gap:8px;">
+        <div style="min-width: 260px; flex:1;">
+          <input id="catNewName" placeholder="pl. kedvenc" style="width:100%;" />
+        </div>
+        <div style="min-width: 120px;">
+          <button id="catAddBtn" style="width:100%;">+ Hozzáadás</button>
+        </div>
+      </div>
+      <div class="help">Max 30 kategória. Törlésnél a kategória lekerül az éttermekről is.</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="small" id="catCount"></div>
+  <div class="tagchips" id="catList" style="margin-top:8px;"></div>
+  <div class="divider"></div>
+  <div class="toolbar-right" style="justify-content:end;">
+    <button id="categoriesCloseBtn">Bezár</button>
+  </div>
+</dialog>
+
+<!-- Manage weights -->
+<dialog id="weightsDialog">
+  <p class="dialog-title">Súlyszintek kezelése (max 5)</p>
+  <div class="help">0 = default. A sorsolás a szint “értékével” súlyoz. Törlésnél az érintett éttermek default-ra állnak.</div>
+  <div class="divider"></div>
+
+  <div class="weights-quick-add">
+    <div>
+      <label for="wNewName">Új szint neve</label><br/>
+      <input id="wNewName" placeholder="pl. extra" style="width:100%;" />
+    </div>
+    <div>
+      <label for="wNewValue">Érték</label><br/>
+      <input id="wNewValue" type="number" min="1" step="1" value="1" style="width:100%;" />
+    </div>
+    <div>
+      <label>&nbsp;</label><br/>
+      <button id="wAddBtn" style="width:100%;">+ Hozzáadás</button>
+    </div>
+  </div>
+
+  <div class="weights-list" id="weightsList"></div>
+
+  <div class="divider"></div>
+  <div class="toolbar-right" style="justify-content:end;">
+    <button id="weightsResetBtn" class="secondary">Alapértelmezett (3)</button>
+    <button id="weightsCloseBtn">Bezár</button>
+  </div>
+</dialog>
+
+<script>
+  // Versions (JSON changed because item.url added)
+  const JSON_VERSION = 1;
+  const UI_VERSION = 1;
+  const APP_VERSION = `${JSON_VERSION}.${UI_VERSION}`;
+
+  const APP_NAME = "PickMyFood";
+  const APP_AUTHOR = "Abai Alex + Copilot";
+  const APP_SLOGAN = "Mi döntünk. Te eszel.";
+  const LEGAL_LINE = "„No warranty.” A kalóriákért nem vállalunk felelősséget.";
+
+  const STORAGE_KEY = "pickmyfood_state_jsonv6";
+  const THEME_KEY = "pickmyfood_theme";
+
+  const MAX_CATEGORIES = 30;
+  const MAX_CATEGORIES_PER_RESTAURANT = 5;
+  const MAX_WEIGHT_LEVELS = 5;
+
+  const TIP_INTERVAL_MS = 8_000;
+  const TIP_FADE_MS = 1000;
+
+  const TIPS = [
+    "Ha van rendelési link, a névre kattintva rögtön megnyílik.",
+    "Az első sorsolás a legőszintébb. A második már alkudozás.",
+    "Az „egyenlő esély” mód jó, ha teljesen fair sorsolást akarsz.",
+    "Sorsolj 3-at, aztán gyors szavazás 1..2..3.",
+    "Az „Újhely” súlyszint segít rávenni magad a kipróbálásra.",
+    "Mentsd el JSON-ba a listát, és oszd meg barátaiddal.",
+    "Ha sok étterem van, a kategória szerinti szűrés nagyon hasznos tud lenni.",
+    "A súlyszintek nem rangsorok, hanem csak relatív értékek. Kísérletezz bátran velük!",
+    "Használhatod a sorsolást arra is, hogy eldöntsd, mit egyetek egy adott étteremben belül: csak add meg külön éttermekként a különböző konyhákat/kategóriákat (pl. „KFC - burger”, „KFC - csirke” stb.).",
+    "Ha éhes vagy, minden jobb ötletnek tűnik.",
+    "A sorsolás gyorsabb, mint a „mit ennél?” vita.",
+    "A döntés ideje alatt az éhség exponenciálisan nő.",
+    "Ha 5× újrasorsolsz, igazából már döntöttél.",
+  ];
+
+  const DEFAULT_WEIGHT_LEVELS = [
+    { name: "Default", value: 1 },
+    { name: "Kiemelt", value: 2 },
+    { name: "Újhely", value: 3 },
+  ];
+
+  const DEFAULT_CATEGORIES = ["pizza","kínai","hamburger","gyros","magyaros", "szendvics", "vega", "thai", "tészta", "kebab", "desszert", "japán", "sushi", "indiai"];
+
+  // item: {id, name, url?, weightLevelIndex, categoryIds, createdAt}
+  const DEFAULT_ITEMS = [
+    { id: crypto.randomUUID(), name: "Pizza Forte", url: "", weightLevelIndex: 1, categoryIds: ["pizza","tészta", "desszert"], createdAt: Date.now()-50000 },
+    { id: crypto.randomUUID(), name: "Wasabi", url: "", weightLevelIndex: 0, categoryIds: ["kínai", "thai", "japán", "sushi"], createdAt: Date.now()-40000 },
+    { id: crypto.randomUUID(), name: "Hamburgeres", url: "", weightLevelIndex: 1, categoryIds: ["hamburger"], createdAt: Date.now()-30000 },
+    { id: crypto.randomUUID(), name: "Kínai", url: "", weightLevelIndex: 0, categoryIds: ["kínai"], createdAt: Date.now()-20000 },
+    { id: crypto.randomUUID(), name: "Gyros", url: "", weightLevelIndex: 2, categoryIds: ["gyros"], createdAt: Date.now()-10000 },
+  ];
+
+  let state = {
+    items: [],
+    categories: [],
+    weightLevels: [],
+    lastPickedId: null,
+    searchName: "",
+    filterCategory: "__ALL__",
+    sort: "NAME_ASC",
+    pickMode: "ALL_UNWEIGHTED",
+    pickCategory: "__ALL__",
+  };
+
+  const el = {
+    themeSelect: document.getElementById("themeSelect"),
+    openAddBtn: document.getElementById("openAddBtn"),
+    openCategoriesBtn: document.getElementById("openCategoriesBtn"),
+    openWeightsBtn: document.getElementById("openWeightsBtn"),
+    exportBtn: document.getElementById("exportBtn"),
+    importBtn: document.getElementById("importBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    fileInput: document.getElementById("fileInput"),
+    searchName: document.getElementById("searchName"),
+    filterCategory: document.getElementById("filterCategory"),
+    sortSelect: document.getElementById("sortSelect"),
+    list: document.getElementById("list"),
+    countInfo: document.getElementById("countInfo"),
+    pickModeSelect: document.getElementById("pickModeSelect"),
+    modeSettings: document.getElementById("modeSettings"),
+    categorySetting: document.getElementById("categorySetting"),
+    pickCategorySelect: document.getElementById("pickCategorySelect"),
+    pick1Btn: document.getElementById("pick1Btn"),
+    pick3Btn: document.getElementById("pick3Btn"),
+    result: document.getElementById("result"),
+    resultMeta: document.getElementById("resultMeta"),
+    weightsLabel: document.getElementById("weightsLabel"),
+    appName: document.getElementById("appName"),
+    appVersion: document.getElementById("appVersion"),
+    appAuthor: document.getElementById("appAuthor"),
+    legalLine: document.getElementById("legalLine"),
+    tipText: document.getElementById("tipText"),
+
+    // dialogs
+    newCategoryDialog: document.getElementById("newCategoryDialog"),
+    newCategoryName: document.getElementById("newCategoryName"),
+    newCategoryCancelBtn: document.getElementById("newCategoryCancelBtn"),
+    newCategorySaveBtn: document.getElementById("newCategorySaveBtn"),
+
+    addDialog: document.getElementById("addDialog"),
+    addName: document.getElementById("addName"),
+    addUrl: document.getElementById("addUrl"),
+    addWeightLevel: document.getElementById("addWeightLevel"),
+    addCategorySelect: document.getElementById("addCategorySelect"),
+    addCategoryBtn: document.getElementById("addCategoryBtn"),
+    addNewCategoryBtn: document.getElementById("addNewCategoryBtn"),
+    addSelectedCategories: document.getElementById("addSelectedCategories"),
+    addCancelBtn: document.getElementById("addCancelBtn"),
+    addSaveBtn: document.getElementById("addSaveBtn"),
+
+    editDialog: document.getElementById("editDialog"),
+    editName: document.getElementById("editName"),
+    editUrl: document.getElementById("editUrl"),
+    editWeightLevel: document.getElementById("editWeightLevel"),
+    editCategorySelect: document.getElementById("editCategorySelect"),
+    editCategoryBtn: document.getElementById("editCategoryBtn"),
+    editNewCategoryBtn: document.getElementById("editNewCategoryBtn"),
+    editSelectedCategories: document.getElementById("editSelectedCategories"),
+    editDeleteBtn: document.getElementById("editDeleteBtn"),
+    editCancelBtn: document.getElementById("editCancelBtn"),
+    editSaveBtn: document.getElementById("editSaveBtn"),
+
+    categoriesDialog: document.getElementById("categoriesDialog"),
+    catNewName: document.getElementById("catNewName"),
+    catAddBtn: document.getElementById("catAddBtn"),
+    catCount: document.getElementById("catCount"),
+    catList: document.getElementById("catList"),
+    categoriesCloseBtn: document.getElementById("categoriesCloseBtn"),
+
+    weightsDialog: document.getElementById("weightsDialog"),
+    wNewName: document.getElementById("wNewName"),
+    wNewValue: document.getElementById("wNewValue"),
+    wAddBtn: document.getElementById("wAddBtn"),
+    weightsList: document.getElementById("weightsList"),
+    weightsResetBtn: document.getElementById("weightsResetBtn"),
+    weightsCloseBtn: document.getElementById("weightsCloseBtn"),
+  };
+
+  let editingId = null;
+  let addTempCats = [];
+  let editTempCats = [];
+  let categoryAddContext = "ADD";
+
+  function normalizeCategory(s){ return (s||"").trim().toLowerCase(); }
+  function clampInt(n,min=1,max=999){ n=Number(n); if(!Number.isFinite(n)) return min; n=Math.floor(n); return Math.max(min, Math.min(max, n)); }
+  function safeWeightIndex(idx){ idx=Number(idx); if(!Number.isFinite(idx)) return 0; idx=Math.floor(idx); if(idx<0) return 0; if(idx>=state.weightLevels.length) return 0; return idx; }
+  function weightValueOfItem(item){ const idx=safeWeightIndex(item.weightLevelIndex); return clampInt(state.weightLevels[idx]?.value ?? 1,1,999); }
+  function weightNameOfItem(item){ const idx=safeWeightIndex(item.weightLevelIndex); return (state.weightLevels[idx]?.name ?? "default").toString(); }
+  function categoriesOfItem(item){ const set=new Set(Array.isArray(item.categoryIds)?item.categoryIds:[]); return Array.from(set).filter(c=>state.categories.includes(c)).slice(0,MAX_CATEGORIES_PER_RESTAURANT); }
+  function sortCats(list){ return list.slice().sort((a,b)=>a.localeCompare(b,"hu")); }
+
+function normalizeUrl(urlRaw){
+  let u = (urlRaw || "").trim();
+  if (!u) return "";
+
+  // If scheme missing, prepend https://
+  if (!/^https?:\/\//i.test(u)) {
+    u = "https://" + u;
+  }
+
+  // Basic sanity check
+  try {
+    const parsed = new URL(u);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+  function setTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+    el.themeSelect.value = theme;
+  }
+  function initTheme(){
+    const saved = localStorage.getItem(THEME_KEY);
+    setTheme(saved === "light" ? "light" : "dark");
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      jsonVersion: JSON_VERSION,
+      uiVersion: UI_VERSION,
+      appVersion: APP_VERSION,
+      items: state.items,
+      categories: state.categories,
+      weightLevels: state.weightLevels,
+      lastPickedId: state.lastPickedId,
+      searchName: state.searchName,
+      filterCategory: state.filterCategory,
+      sort: state.sort,
+      pickMode: state.pickMode,
+      pickCategory: state.pickCategory,
+    }));
+  }
+
+  function migrate(parsed){
+    const cats = Array.isArray(parsed.categories) ? parsed.categories.map(normalizeCategory).filter(Boolean) : [];
+    const uniqueCats = Array.from(new Set(cats)).slice(0, MAX_CATEGORIES);
+
+    let wls = Array.isArray(parsed.weightLevels) ? parsed.weightLevels : [];
+    wls = wls
+      .filter(w => w && typeof w === "object")
+      .map(w => ({
+        name: (typeof w.name === "string" && w.name.trim()) ? w.name.trim() : "szint",
+        value: clampInt(w.value ?? 1, 1, 999),
+      }))
+      .slice(0, MAX_WEIGHT_LEVELS);
+
+    if (!wls.length) wls = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
+    if (!wls[0]) wls[0] = { name: "default", value: 1 };
+
+    let items = Array.isArray(parsed.items) ? parsed.items : [];
+    items = items.map(it => {
+      const name = (it?.name ?? "").toString().trim();
+      if (!name) return null;
+      const catIds = Array.isArray(it.categoryIds) ? it.categoryIds.map(normalizeCategory).filter(Boolean) : [];
+      const wIdx = (it.weightLevelIndex !== undefined) ? it.weightLevelIndex : 0;
+      const url = normalizeUrl(it.url ?? "");
+
+      return {
+        id: (typeof it.id === "string" && it.id) ? it.id : crypto.randomUUID(),
+        name,
+        url,
+        weightLevelIndex: Number.isFinite(Number(wIdx)) ? Math.floor(Number(wIdx)) : 0,
+        categoryIds: Array.from(new Set(catIds)).slice(0, MAX_CATEGORIES_PER_RESTAURANT),
+        createdAt: Number(it.createdAt) || Date.now()
+      };
+    }).filter(Boolean);
+
+    return { uniqueCats, wls, items };
+  }
+
+  function loadState(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      state.categories = DEFAULT_CATEGORIES.slice(0, MAX_CATEGORIES);
+      state.weightLevels = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
+      state.items = DEFAULT_ITEMS.slice();
+      return;
+    }
+    try{
+      const parsed = JSON.parse(raw);
+      const m = migrate(parsed);
+
+      state.categories = (m.uniqueCats.length ? m.uniqueCats : DEFAULT_CATEGORIES.slice(0, MAX_CATEGORIES));
+      state.weightLevels = (m.wls.length ? m.wls : DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS));
+      state.items = (m.items.length ? m.items : DEFAULT_ITEMS.slice());
+
+      state.categories = Array.from(new Set(state.categories.map(normalizeCategory).filter(Boolean))).slice(0, MAX_CATEGORIES);
+      state.weightLevels = state.weightLevels.slice(0, MAX_WEIGHT_LEVELS);
+      if (!state.weightLevels[0]) state.weightLevels[0] = { name:"default", value: 1 };
+
+      state.items = state.items.map(it => ({
+        ...it,
+        url: normalizeUrl(it.url ?? ""),
+        weightLevelIndex: safeWeightIndex(it.weightLevelIndex),
+        categoryIds: categoriesOfItem(it)
+      }));
+    } catch {
+      state.categories = DEFAULT_CATEGORIES.slice(0, MAX_CATEGORIES);
+      state.weightLevels = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
+      state.items = DEFAULT_ITEMS.slice();
+    }
+  }
+
+  function getVisibleListItems(){
+    let items = state.items.slice();
+    if (state.filterCategory !== "__ALL__") items = items.filter(i => categoriesOfItem(i).includes(state.filterCategory));
+    const q = (state.searchName || "").trim().toLowerCase();
+    if (q) items = items.filter(i => i.name.toLowerCase().includes(q));
+
+    const byName = (a,b)=>a.name.localeCompare(b.name,"hu");
+    const byWeight = (a,b)=>weightValueOfItem(a)-weightValueOfItem(b);
+    const byCreated=(a,b)=>(a.createdAt||0)-(b.createdAt||0);
+    const catKey = (i)=> (categoriesOfItem(i)[0] || "");
+    const byCat=(a,b)=>catKey(a).localeCompare(catKey(b),"hu");
+
+    switch(state.sort){
+      case "NAME_ASC": items.sort(byName); break;
+      case "NAME_DESC": items.sort((a,b)=>-byName(a,b)); break;
+      case "WEIGHT_ASC": items.sort(byWeight); break;
+      case "WEIGHT_DESC": items.sort((a,b)=>-byWeight(a,b)); break;
+      case "CATEGORY_ASC": items.sort((a,b)=>{ const c=byCat(a,b); return c!==0?c:byName(a,b);}); break;
+      case "CREATED_ASC": items.sort(byCreated); break;
+      case "CREATED_DESC": items.sort((a,b)=>-byCreated(a,b)); break;
+      default: items.sort(byName);
+    }
+    return items;
+  }
+
+  function pickUniform(items, avoidId){
+    const eligible = items.filter(i => !avoidId || i.id !== avoidId);
+    const source = eligible.length ? eligible : items.slice();
+    if (!source.length) return null;
+    return source[Math.floor(Math.random() * source.length)];
+  }
+
+  function pickWeighted(items, avoidId){
+    const eligible = items.filter(i => !avoidId || i.id !== avoidId);
+    const source = eligible.length ? eligible : items.slice();
+    if(!source.length) return null;
+
+    const weights = source.map(i => Math.max(1, weightValueOfItem(i)));
+    const total = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random() * total;
+    for(let idx=0; idx<source.length; idx++){
+      r -= weights[idx];
+      if(r<=0) return source[idx];
+    }
+    return source[source.length-1];
+  }
+
+  function categoriesWithWeights(items){
+    const map = new Map();
+    for (const it of items) {
+      const cats = categoriesOfItem(it);
+      if (!cats.length) continue;
+      const w = Math.max(1, weightValueOfItem(it));
+      for (const c of cats) {
+        const cur = map.get(c) || { cat: c, weightSum: 0, count: 0 };
+        cur.weightSum += w;
+        cur.count += 1;
+        map.set(c, cur);
+      }
+    }
+    return Array.from(map.values()).sort((a,b)=>a.cat.localeCompare(b.cat,"hu"));
+  }
+
+  function pickRandomCategoryByWeight(items){
+    const catsAll = categoriesWithWeights(items);
+    if(!catsAll.length) return null;
+    const total = catsAll.reduce((sum,c)=>sum+c.weightSum,0);
+    let r = Math.random()*total;
+    for(const c of catsAll){
+      r -= c.weightSum;
+      if(r<=0) return c;
+    }
+    return catsAll[catsAll.length-1];
+  }
+
+  function renderWeightsLabel(){
+    el.weightsLabel.textContent = state.weightLevels.map((w,i)=>`${i}:${w.name}`).join(", ");
+  }
+
+  function renderWeightLevelOptions(selectEl, selectedIdx){
+    selectEl.innerHTML = "";
+    state.weightLevels.forEach((w, i) => {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = w.name;
+      selectEl.appendChild(opt);
+    });
+    selectEl.value = String(safeWeightIndex(selectedIdx ?? 0));
+  }
+
+  function renderCategoryOptions(selectEl){
+    selectEl.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "__NONE__";
+    opt.textContent = "Válassz kategóriát...";
+    selectEl.appendChild(opt);
+    for (const c of sortCats(state.categories)) {
+      const o = document.createElement("option");
+      o.value = c;
+      o.textContent = c;
+      selectEl.appendChild(o);
+    }
+    selectEl.value = "__NONE__";
+  }
+
+  function renderFilterCategory(){
+    const current = state.filterCategory;
+    el.filterCategory.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "__ALL__";
+    all.textContent = "Összes";
+    el.filterCategory.appendChild(all);
+    for (const c of sortCats(state.categories)) {
+      const o = document.createElement("option");
+      o.value = c;
+      o.textContent = c;
+      el.filterCategory.appendChild(o);
+    }
+    const values = ["__ALL__", ...state.categories];
+    state.filterCategory = values.includes(current) ? current : "__ALL__";
+    el.filterCategory.value = state.filterCategory;
+  }
+
+  function renderPickCategorySelect(){
+    const current = state.pickCategory;
+    el.pickCategorySelect.innerHTML = "";
+    const optAll = document.createElement("option");
+    optAll.value = "__ALL__";
+    optAll.textContent = "Válassz kategóriát...";
+    el.pickCategorySelect.appendChild(optAll);
+    for (const c of sortCats(state.categories)) {
+      const o = document.createElement("option");
+      o.value = c;
+      o.textContent = c;
+      el.pickCategorySelect.appendChild(o);
+    }
+    const values = ["__ALL__", ...state.categories];
+    state.pickCategory = values.includes(current) ? current : "__ALL__";
+    el.pickCategorySelect.value = state.pickCategory;
+  }
+
+  function renderPickModeUI(){
+    el.pickModeSelect.value = state.pickMode;
+    el.modeSettings.style.display = "none";
+    el.categorySetting.style.display = "none";
+    if (state.pickMode === "IN_CATEGORY") {
+      el.modeSettings.style.display = "block";
+      el.categorySetting.style.display = "block";
+    }
+  }
+
+  function renderChips(container, catList, onRemove){
+    container.innerHTML = "";
+    for (const c of catList) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = c;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "×";
+      b.title = "Eltávolítás";
+      b.addEventListener("click", () => onRemove(c));
+      chip.appendChild(b);
+      container.appendChild(chip);
+    }
+  }
+
+  function renderList(){
+    const visible = getVisibleListItems();
+    el.list.innerHTML = "";
+
+    for (const item of visible) {
+      const li = document.createElement("li");
+      li.dataset.id = item.id;
+
+      const left = document.createElement("div");
+
+      // Name: link if url exists
+      const nameEl = document.createElement(item.url ? "a" : "div");
+      nameEl.className = "name";
+      nameEl.textContent = item.name;
+
+      if (item.url) {
+        nameEl.classList.add("link");
+        nameEl.href = item.url;
+        nameEl.target = "_blank";
+        nameEl.rel = "noopener noreferrer";
+        nameEl.title = "Rendelési oldal megnyitása";
+      }
+
+      const cats = categoriesOfItem(item);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `Súly: ${weightNameOfItem(item)} • Kategóriák: ${cats.length ? cats.join(", ") : "—"}${item.url ? " • Link: van" : ""}`;
+
+      left.appendChild(nameEl);
+      left.appendChild(meta);
+
+      const right = document.createElement("div");
+      right.style.display = "grid";
+      right.style.gap = "8px";
+      right.style.justifyItems = "end";
+
+      const pills = document.createElement("div");
+      pills.className = "pillrow";
+      if (cats.length) {
+        for (const c of cats) {
+          const p = document.createElement("span");
+          p.className = "pill";
+          p.textContent = c;
+          pills.appendChild(p);
+        }
+      } else {
+        const p = document.createElement("span");
+        p.className = "pill";
+        p.textContent = "nincs kategória";
+        pills.appendChild(p);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Szerkesztés";
+      editBtn.addEventListener("click",(e)=>{e.stopPropagation(); openEdit(item.id);});
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Törlés";
+      delBtn.className = "danger";
+      delBtn.addEventListener("click",(e)=>{e.stopPropagation(); deleteItem(item.id);});
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      right.appendChild(pills);
+      right.appendChild(actions);
+
+      li.appendChild(left);
+      li.appendChild(right);
+      li.addEventListener("dblclick", ()=>openEdit(item.id));
+      el.list.appendChild(li);
+    }
+
+    el.countInfo.textContent = `${visible.length} / ${state.items.length} elem`;
+  }
+
+  function rerender(){
+    renderWeightsLabel();
+    renderFilterCategory();
+    renderPickCategorySelect();
+    renderPickModeUI();
+    renderList();
+    el.searchName.value = state.searchName;
+    el.sortSelect.value = state.sort;
+    saveState();
+  }
+
+  // dialogs
+  function renderAddChips(){
+    renderChips(el.addSelectedCategories, addTempCats, (c)=>{
+      addTempCats = addTempCats.filter(x=>x!==c);
+      renderAddChips();
+    });
+  }
+  function renderEditChips(){
+    renderChips(el.editSelectedCategories, editTempCats, (c)=>{
+      editTempCats = editTempCats.filter(x=>x!==c);
+      renderEditChips();
+    });
+  }
+
+  function openAdd(){
+    addTempCats = [];
+    el.addName.value = "";
+    el.addUrl.value = "";
+    renderWeightLevelOptions(el.addWeightLevel, 0);
+    renderCategoryOptions(el.addCategorySelect);
+    renderAddChips();
+    el.addDialog.showModal();
+    setTimeout(()=>el.addName.focus(),0);
+  }
+
+  function addCategoryToTemp(context){
+    const select = (context === "ADD") ? el.addCategorySelect : el.editCategorySelect;
+    const chosen = select.value;
+    if (!chosen || chosen === "__NONE__") return;
+
+    const target = (context === "ADD") ? addTempCats : editTempCats;
+    if (target.includes(chosen)) return;
+    if (target.length >= MAX_CATEGORIES_PER_RESTAURANT) { alert(`Max ${MAX_CATEGORIES_PER_RESTAURANT} kategória lehet egy étteremnél.`); return; }
+
+    target.push(chosen);
+    if (context === "ADD") renderAddChips();
+    else renderEditChips();
+
+    select.value = "__NONE__";
+  }
+
+  function saveAdd(){
+    const name = (el.addName.value||"").trim();
+    if (!name) { alert("A név nem lehet üres."); return; }
+
+    const url = normalizeUrl(el.addUrl.value);
+    if ((el.addUrl.value || "").trim() && !url) {
+      alert("A link csak http:// vagy https:// lehet (pl. https://wolt.com/...).");
+      return;
+    }
+
+    const weightLevelIndex = safeWeightIndex(el.addWeightLevel.value);
+    const cats = addTempCats.slice(0, MAX_CATEGORIES_PER_RESTAURANT);
+
+    state.items.unshift({
+      id: crypto.randomUUID(),
+      name,
+      url,
+      weightLevelIndex,
+      categoryIds: cats,
+      createdAt: Date.now()
+    });
+
+    el.addDialog.close();
+    rerender();
+  }
+
+  function openEdit(id){
+    const item = state.items.find(i => i.id === id);
+    if(!item) return;
+    editingId = id;
+
+    el.editName.value = item.name;
+    el.editUrl.value = item.url || "";
+    renderWeightLevelOptions(el.editWeightLevel, item.weightLevelIndex);
+    renderCategoryOptions(el.editCategorySelect);
+    editTempCats = categoriesOfItem(item);
+    renderEditChips();
+
+    el.editDialog.showModal();
+    setTimeout(()=>el.editName.focus(),0);
+  }
+
+  function saveEdit(){
+    const item = state.items.find(i => i.id === editingId);
+    if(!item) return;
+
+    const name = (el.editName.value||"").trim();
+    if(!name){ alert("A név nem lehet üres."); return; }
+
+    const url = normalizeUrl(el.editUrl.value);
+    if ((el.editUrl.value || "").trim() && !url) {
+      alert("A link csak http:// vagy https:// lehet.");
+      return;
+    }
+
+    item.name = name;
+    item.url = url;
+    item.weightLevelIndex = safeWeightIndex(el.editWeightLevel.value);
+    item.categoryIds = editTempCats.slice(0, MAX_CATEGORIES_PER_RESTAURANT);
+
+    el.editDialog.close();
+    rerender();
+  }
+
+  function deleteFromEdit(){
+    const id = editingId;
+    el.editDialog.close();
+    editingId = null;
+    if (id) deleteItem(id);
+  }
+
+  function deleteItem(id){
+    state.items = state.items.filter(i => i.id !== id);
+    if (state.lastPickedId === id) state.lastPickedId = null;
+    rerender();
+  }
+
+  // category management
+  function canAddCategory(){ return state.categories.length < MAX_CATEGORIES; }
+  function addCategory(nameRaw){
+    const name = normalizeCategory(nameRaw);
+    if (!name) { alert("A kategória neve nem lehet üres."); return false; }
+    if (state.categories.includes(name)) { alert("Ez a kategória már létezik."); return false; }
+    if (!canAddCategory()) { alert(`Elérted a ${MAX_CATEGORIES} kategória limitet.`); return false; }
+    state.categories.push(name);
+    state.categories = Array.from(new Set(state.categories)).slice(0, MAX_CATEGORIES);
+    return true;
+  }
+  function removeCategory(cat){
+    if (!confirm(`Biztosan törlöd ezt a kategóriát?\n\n${cat}\n\nEz minden étteremről le fog kerülni.`)) return;
+    state.categories = state.categories.filter(c => c !== cat);
+    state.items = state.items.map(it => ({...it, categoryIds: categoriesOfItem(it).filter(c => c !== cat)}));
+    if (state.filterCategory === cat) state.filterCategory = "__ALL__";
+    if (state.pickCategory === cat) state.pickCategory = "__ALL__";
+    rerender();
+  }
+  function openCategoriesDialog(){
+    el.catNewName.value = "";
+    renderCategoriesDialog();
+    el.categoriesDialog.showModal();
+    setTimeout(()=>el.catNewName.focus(),0);
+  }
+  function renderCategoriesDialog(){
+    el.catCount.textContent = `Kategóriák száma: ${state.categories.length} / ${MAX_CATEGORIES}`;
+    el.catList.innerHTML = "";
+    for (const c of sortCats(state.categories)) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = c;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "Törlés";
+      b.addEventListener("click", ()=>removeCategory(c));
+      chip.appendChild(b);
+      el.catList.appendChild(chip);
+    }
+  }
+
+  // new category dialog
+  function openNewCategoryDialog(context){
+    categoryAddContext = context;
+    el.newCategoryName.value = "";
+    el.newCategoryDialog.showModal();
+    setTimeout(()=>el.newCategoryName.focus(),0);
+  }
+  function saveNewCategory(){
+    const ok = addCategory(el.newCategoryName.value);
+    if(!ok) return;
+    const newly = normalizeCategory(el.newCategoryName.value);
+    el.newCategoryDialog.close();
+
+    renderFilterCategory();
+    renderPickCategorySelect();
+    renderCategoryOptions(el.addCategorySelect);
+    renderCategoryOptions(el.editCategorySelect);
+    renderCategoriesDialog();
+
+    if (categoryAddContext === "ADD") el.addCategorySelect.value = newly;
+    else el.editCategorySelect.value = newly;
+
+    rerender();
+  }
+
+  // weight management
+  function addWeightLevel(nameRaw, valueRaw){
+    if (state.weightLevels.length >= MAX_WEIGHT_LEVELS) { alert("Max 5 súlyszint lehet."); return false; }
+    const name = (nameRaw||"").toString().trim();
+    if (!name) { alert("A súlyszint neve nem lehet üres."); return false; }
+    const value = clampInt(valueRaw, 1, 999);
+    state.weightLevels.push({ name, value });
+    return true;
+  }
+  function deleteWeightLevel(index){
+    index = safeWeightIndex(index);
+    if (index === 0) return;
+    if (!confirm("Biztosan törlöd ezt a súlyszintet? Az érintett éttermek default-ra állnak.")) return;
+    state.weightLevels.splice(index, 1);
+    state.items = state.items.map(it => {
+      const idx = safeWeightIndex(it.weightLevelIndex);
+      if (idx === index) return { ...it, weightLevelIndex: 0 };
+      if (idx > index) return { ...it, weightLevelIndex: idx - 1 };
+      return it;
+    });
+    rerender();
+  }
+  function updateWeightLevel(index, newName, newValue){
+    index = safeWeightIndex(index);
+    const wl = state.weightLevels[index];
+    if (!wl) return;
+    const name = (newName||"").toString().trim();
+    if (!name) { alert("Név nem lehet üres."); return; }
+    wl.name = name;
+    wl.value = clampInt(newValue, 1, 999);
+    rerender();
+  }
+  function resetWeightLevels(){
+    if (!confirm("Visszaállítod az alapértelmezett 3 súlyszintet?")) return;
+    state.weightLevels = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
+    state.items = state.items.map(it => ({
+      ...it,
+      weightLevelIndex: (Number(it.weightLevelIndex) >= state.weightLevels.length) ? 0 : safeWeightIndex(it.weightLevelIndex)
+    }));
+    rerender();
+  }
+  function openWeightsDialog(){
+    el.wNewName.value = "";
+    el.wNewValue.value = 1;
+    renderWeightsDialog();
+    el.weightsDialog.showModal();
+  }
+  function renderWeightsDialog(){
+    el.weightsList.innerHTML = "";
+    state.weightLevels.forEach((w, i) => {
+      const row = document.createElement("div");
+      row.className = "weight-row";
+
+      const c1 = document.createElement("div");
+      const idx = document.createElement("div");
+      idx.className = "idx";
+      idx.textContent = `Index: ${i}${i===0 ? " (default)" : ""}`;
+      const l1 = document.createElement("label");
+      l1.textContent = "Név";
+      const i1 = document.createElement("input");
+      i1.value = w.name;
+      i1.addEventListener("change", ()=>updateWeightLevel(i, i1.value, i2.value));
+      c1.appendChild(idx);
+      c1.appendChild(l1); c1.appendChild(document.createElement("br")); c1.appendChild(i1);
+
+      const c2 = document.createElement("div");
+      const l2 = document.createElement("label");
+      l2.textContent = "Érték";
+      const i2 = document.createElement("input");
+      i2.type = "number"; i2.min = "1"; i2.step = "1";
+      i2.value = w.value;
+      i2.addEventListener("change", ()=>updateWeightLevel(i, i1.value, i2.value));
+      c2.appendChild(l2); c2.appendChild(document.createElement("br")); c2.appendChild(i2);
+
+      const c3 = document.createElement("div");
+      c3.style.display = "flex";
+      c3.style.justifyContent = "flex-end";
+      if (i !== 0) {
+        const del = document.createElement("button");
+        del.className = "danger";
+        del.textContent = "Törlés";
+        del.addEventListener("click", ()=>deleteWeightLevel(i));
+        c3.appendChild(del);
+      } else {
+        const spacer = document.createElement("div");
+        spacer.style.height = "1px";
+        c3.appendChild(spacer);
+      }
+
+      row.appendChild(c1); row.appendChild(c2); row.appendChild(c3);
+      el.weightsList.appendChild(row);
+    });
+  }
+
+  // picking
+  function buildPoolForMode(){
+    const all = state.items.slice();
+    if (state.pickMode === "ALL_UNWEIGHTED") return { kind:"restaurant", pool: all, meta:"MÓD: összes (egyenlő esély)", picker:"uniform" };
+    if (state.pickMode === "ALL_WEIGHTED") return { kind:"restaurant", pool: all, meta:"MÓD: összes (súlyozott)", picker:"weighted" };
+    if (state.pickMode === "IN_CATEGORY") {
+      const cat = state.pickCategory;
+      if (!cat || cat === "__ALL__") return { kind:"error", message:"Válassz kategóriát." };
+      const inCat = all.filter(i => categoriesOfItem(i).includes(cat));
+      if (!inCat.length) return { kind:"error", message:"Ebben a kategóriában nincs étterem." };
+      return { kind:"restaurant", pool: inCat, meta:`MÓD: kategóriából (${cat})`, picker:"weighted" };
+    }
+    return { kind:"category", pool: all, meta:"MÓD: random kategória" };
+  }
+
+  function doPickOne(){
+    const avoid = state.lastPickedId;
+    const mode = buildPoolForMode();
+    if (mode.kind === "error") { alert(mode.message); return; }
+    if (mode.kind === "category") {
+      const picked = pickRandomCategoryByWeight(mode.pool);
+      if (!picked) { alert("Nincs kategória hozzárendelve egyetlen étteremhez sem."); return; }
+      el.result.textContent = picked.cat;
+      el.resultMeta.textContent = `${mode.meta} • Elemszám: ${picked.count}`;
+      return;
+    }
+    const chosen = (mode.picker === "uniform") ? pickUniform(mode.pool, avoid) : pickWeighted(mode.pool, avoid);
+    if (!chosen) { alert("Nincs mit sorsolni."); return; }
+    state.lastPickedId = chosen.id;
+    el.result.textContent = chosen.name;
+    const cats = categoriesOfItem(chosen);
+    el.resultMeta.textContent = `${mode.meta} • Súly: ${weightNameOfItem(chosen)} • Kategóriák: ${cats.length?cats.join(", "):"—"}${chosen.url ? " • Link: van" : ""}`;
+    saveState();
+  }
+
+  function doPickThree(){
+    const mode = buildPoolForMode();
+    if (mode.kind === "error") { alert(mode.message); return; }
+    if (mode.kind === "category") {
+      const catsAll = categoriesWithWeights(mode.pool);
+      if (!catsAll.length) { alert("Nincs kategória hozzárendelve egyetlen étteremhez sem."); return; }
+      const picked = [];
+      let source = catsAll.slice();
+      for (let k=0;k<3 && source.length;k++){
+        const total = source.reduce((sum,c)=>sum+c.weightSum,0);
+        let r = Math.random()*total;
+        let idx = 0;
+        for (; idx<source.length; idx++){
+          r -= source[idx].weightSum;
+          if (r<=0) break;
+        }
+        const c = source[Math.min(idx, source.length-1)];
+        picked.push(c.cat);
+        source = source.filter(x => x.cat !== c.cat);
+      }
+      el.result.textContent = picked.join(" • ");
+      el.resultMeta.textContent = `${mode.meta} • 3 javaslat`;
+      return;
+    }
+
+    const all = mode.pool.slice();
+    if (!all.length) { alert("Nincs mit sorsolni."); return; }
+
+    const picks = [];
+    let avoid = state.lastPickedId;
+    for (let k=0;k<3;k++){
+      const chosen = (mode.picker === "uniform") ? pickUniform(all, avoid) : pickWeighted(all, avoid);
+      if (!chosen) break;
+      if (!picks.some(p=>p.id===chosen.id)) picks.push(chosen);
+      avoid = chosen.id;
+      if (picks.length === all.length) break;
+    }
+    state.lastPickedId = picks[0].id;
+    el.result.textContent = picks.map(p=>p.name).join(" • ");
+    el.resultMeta.textContent = `${mode.meta} • 3 javaslat`;
+    saveState();
+  }
+
+  // export/import
+  function exportJSON(){
+    const payload = {
+      jsonVersion: JSON_VERSION,
+      uiVersion: UI_VERSION,
+      appVersion: APP_VERSION,
+      exportedAt: new Date().toISOString(),
+      app: { name: APP_NAME, author: APP_AUTHOR },
+      categories: state.categories,
+      weightLevels: state.weightLevels,
+      items: state.items
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "pickmyfood-list.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function importJSONFile(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(String(reader.result || ""));
+        if (Number(parsed.jsonVersion) !== JSON_VERSION) {
+          alert(`Nem kompatibilis JSON verzió.\n\nFájl: ${parsed.jsonVersion}\nProgram: ${JSON_VERSION}`);
+          return;
+        }
+        const m = migrate(parsed);
+
+        state.categories = (m.uniqueCats.length ? m.uniqueCats : DEFAULT_CATEGORIES.slice(0, MAX_CATEGORIES));
+        state.weightLevels = (m.wls.length ? m.wls : DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS));
+        state.items = (m.items.length ? m.items : DEFAULT_ITEMS.slice());
+
+        state.categories = Array.from(new Set(state.categories.map(normalizeCategory).filter(Boolean))).slice(0, MAX_CATEGORIES);
+        state.weightLevels = state.weightLevels.slice(0, MAX_WEIGHT_LEVELS);
+        if (!state.weightLevels[0]) state.weightLevels[0] = { name:"default", value: 1 };
+
+        state.items = state.items.map(it => ({
+          ...it,
+          url: normalizeUrl(it.url ?? ""),
+          weightLevelIndex: safeWeightIndex(it.weightLevelIndex),
+          categoryIds: categoriesOfItem(it)
+        }));
+
+        state.lastPickedId = null;
+        state.searchName = "";
+        state.filterCategory = "__ALL__";
+        state.sort = "NAME_ASC";
+        state.pickMode = "ALL_UNWEIGHTED";
+        state.pickCategory = "__ALL__";
+
+        rerender();
+        el.result.textContent = "—";
+        el.resultMeta.textContent = "Lista betöltve JSON-ból.";
+      } catch(e){
+        alert("Nem sikerült betölteni: " + (e?.message || e));
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function resetAll(){
+    if(!confirm("Biztosan törlöd az egész listát?")) return;
+    state.items = [];
+    state.lastPickedId = null;
+    state.searchName = "";
+    state.filterCategory = "__ALL__";
+    state.sort = "NAME_ASC";
+    state.pickMode = "ALL_UNWEIGHTED";
+    state.pickCategory = "__ALL__";
+    rerender();
+    el.result.textContent = "—";
+    el.resultMeta.textContent = "Lista törölve.";
+  }
+
+  // tips
+  function pickRandomTip(prevIndex){
+    if (TIPS.length === 0) return { index: -1, text: "" };
+    if (TIPS.length === 1) return { index: 0, text: TIPS[0] };
+    let idx = Math.floor(Math.random() * TIPS.length);
+    if (idx === prevIndex) idx = (idx + 1) % TIPS.length;
+    return { index: idx, text: TIPS[idx] };
+  }
+
+  let tipIndex = -1;
+  let tipTimer = null;
+
+  function setTip(text){
+    el.tipText.textContent = text;
+  }
+
+  function rotateTip(){
+    el.tipText.classList.add("fade-out");
+    setTimeout(() => {
+      const next = pickRandomTip(tipIndex);
+      tipIndex = next.index;
+      setTip(next.text);
+      el.tipText.classList.remove("fade-out");
+    }, TIP_FADE_MS);
+  }
+
+  function startTips(){
+    const first = pickRandomTip(-1);
+    tipIndex = first.index;
+    setTip(first.text);
+    if (tipTimer) clearInterval(tipTimer);
+    tipTimer = setInterval(rotateTip, TIP_INTERVAL_MS);
+  }
+
+  // footer
+  function setFooter(){
+    el.appName.textContent = APP_NAME;
+    el.appVersion.textContent = `v${APP_VERSION}`;
+    el.appAuthor.textContent = APP_AUTHOR;
+    el.legalLine.textContent = LEGAL_LINE;
+  }
+
+  // pick mode UI + dialogs openers etc
+  function openWeightsDialog(){
+    el.wNewName.value = "";
+    el.wNewValue.value = 1;
+    renderWeightsDialog();
+    el.weightsDialog.showModal();
+  }
+
+  function buildModeUI(){
+    renderPickModeUI();
+  }
+
+  // events wiring
+  el.themeSelect.addEventListener("change",(e)=>setTheme(e.target.value));
+  el.openAddBtn.addEventListener("click", openAdd);
+  el.openCategoriesBtn.addEventListener("click", openCategoriesDialog);
+  el.openWeightsBtn.addEventListener("click", openWeightsDialog);
+
+  el.exportBtn.addEventListener("click", exportJSON);
+  el.importBtn.addEventListener("click", ()=>el.fileInput.click());
+  el.fileInput.addEventListener("change",(e)=>{
+    const f = e.target.files && e.target.files[0];
+    if (f) importJSONFile(f);
+    e.target.value = "";
+  });
+  el.resetBtn.addEventListener("click", resetAll);
+
+  el.searchName.addEventListener("input",(e)=>{ state.searchName = e.target.value; renderList(); saveState(); });
+  el.filterCategory.addEventListener("change",(e)=>{ state.filterCategory = e.target.value; renderList(); saveState(); });
+  el.sortSelect.addEventListener("change",(e)=>{ state.sort = e.target.value; renderList(); saveState(); });
+
+  el.pickModeSelect.addEventListener("change",(e)=>{ state.pickMode = e.target.value; renderPickModeUI(); saveState(); });
+  el.pickCategorySelect.addEventListener("change",(e)=>{ state.pickCategory = e.target.value; saveState(); });
+
+  el.pick1Btn.addEventListener("click", doPickOne);
+  el.pick3Btn.addEventListener("click", doPickThree);
+
+  // dialog buttons
+  el.addCancelBtn.addEventListener("click", ()=>el.addDialog.close());
+  el.addSaveBtn.addEventListener("click", saveAdd);
+  el.addCategoryBtn.addEventListener("click", ()=>addCategoryToTemp("ADD"));
+  el.addNewCategoryBtn.addEventListener("click", ()=>openNewCategoryDialog("ADD"));
+
+  el.editCancelBtn.addEventListener("click", ()=>el.editDialog.close());
+  el.editSaveBtn.addEventListener("click", saveEdit);
+  el.editDeleteBtn.addEventListener("click", deleteFromEdit);
+  el.editCategoryBtn.addEventListener("click", ()=>addCategoryToTemp("EDIT"));
+  el.editNewCategoryBtn.addEventListener("click", ()=>openNewCategoryDialog("EDIT"));
+
+  el.newCategoryCancelBtn.addEventListener("click", ()=>el.newCategoryDialog.close());
+  el.newCategorySaveBtn.addEventListener("click", saveNewCategory);
+  el.newCategorySaveBtn.addEventListener("click", ()=>addCategoryToTemp("ADD"));
+
+  el.categoriesCloseBtn.addEventListener("click", ()=>el.categoriesDialog.close());
+  el.catAddBtn.addEventListener("click", ()=>{
+    const ok = addCategory(el.catNewName.value);
+    if (ok) {
+      el.catNewName.value = "";
+      renderCategoriesDialog();
+      rerender();
+    }
+  });
+
+  el.weightsCloseBtn.addEventListener("click", ()=>el.weightsDialog.close());
+  el.weightsResetBtn.addEventListener("click", resetWeightLevels);
+  el.wAddBtn.addEventListener("click", ()=>{
+    const ok = addWeightLevel(el.wNewName.value, el.wNewValue.value);
+    if (ok) {
+      el.wNewName.value = "";
+      el.wNewValue.value = 1;
+      renderWeightsDialog();
+      rerender();
+    }
+  });
+
+  // init
+  initTheme();
+  loadState();
+
+  // sanitize
+  state.categories = Array.from(new Set(state.categories.map(normalizeCategory).filter(Boolean))).slice(0, MAX_CATEGORIES);
+  state.weightLevels = (Array.isArray(state.weightLevels) ? state.weightLevels : []).slice(0, MAX_WEIGHT_LEVELS);
+  if (!state.weightLevels.length) state.weightLevels = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
+  if (!state.weightLevels[0]) state.weightLevels[0] = { name:"default", value: 1 };
+
+  state.items = state.items.map(it => ({
+    ...it,
+    url: normalizeUrl(it.url ?? ""),
+    weightLevelIndex: safeWeightIndex(it.weightLevelIndex),
+    categoryIds: categoriesOfItem(it)
+  }));
+
+  setFooter();
+  startTips();
+  rerender();
+</script>
+</body>
+</html>
