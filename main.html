@@ -207,7 +207,7 @@
     .weights-list{display:grid;gap:10px;margin-top: 12px;}
     .weight-row{
       display:grid;
-      grid-template-columns: 1.2fr 0.6fr 90px;
+      grid-template-columns: 108px minmax(260px, 1fr) 120px auto;
       gap:10px;
       align-items:end;
       padding:10px;
@@ -215,9 +215,38 @@
       border-radius:12px;
       background: color-mix(in oklab, var(--panel), #000 6%);
     }
-    .weight-row .idx{font-size:12px;color:var(--muted);margin-bottom: 4px;}
+    .weight-row .idx{
+      display:grid;
+      gap:4px;
+      align-items:end;
+    }
+    .weight-row .idx label{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .weight-row .idx-value{
+      color: var(--text);
+      padding:4px 2px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:6px;
+      font-weight:700;
+      white-space: nowrap;
+    }
+    .weight-row .idx-badge{
+      font-size:11px;
+      color:var(--muted);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:2px 7px;
+      line-height:1.2;
+      font-weight:600;
+    }
+    .weight-row .value-input{ width:100%; max-width: 120px; }
     @media (max-width: 700px){
       .weight-row{grid-template-columns: 1fr;}
+      .weight-row .value-input{ max-width: none; }
     }
 
     footer{
@@ -543,7 +572,7 @@
 <!-- Manage weights -->
 <dialog id="weightsDialog">
   <p class="dialog-title">Súlyszintek kezelése (max 5)</p>
-  <div class="help">0 = default. A sorsolás a szint “értékével” súlyoz. Törlésnél az érintett éttermek default-ra állnak.</div>
+  <div class="help">A sorsolás a szint “értékével” súlyoz. Törlésnél az érintett éttermek Index0-ás (default) súlyszintre állnak.</div>
   <div class="divider"></div>
 
   <div class="weights-quick-add">
@@ -1228,6 +1257,7 @@ function normalizeUrl(urlRaw){
     state.items = state.items.map(it => ({...it, categoryIds: categoriesOfItem(it).filter(c => c !== cat)}));
     if (state.filterCategory === cat) state.filterCategory = "__ALL__";
     if (state.pickCategory === cat) state.pickCategory = "__ALL__";
+    renderCategoriesDialog();
     rerender();
   }
   function openCategoriesDialog(){
@@ -1297,6 +1327,7 @@ function normalizeUrl(urlRaw){
       if (idx > index) return { ...it, weightLevelIndex: idx - 1 };
       return it;
     });
+    renderWeightsDialog();
     rerender();
   }
   function updateWeightLevel(index, newName, newValue){
@@ -1330,22 +1361,37 @@ function normalizeUrl(urlRaw){
       const row = document.createElement("div");
       row.className = "weight-row";
 
+      const c0 = document.createElement("div");
+      c0.className = "idx";
+      const l0 = document.createElement("label");
+      l0.textContent = "Index";
+      const v0 = document.createElement("div");
+      v0.className = "idx-value";
+      const idxNumber = document.createElement("span");
+      idxNumber.textContent = String(i);
+      v0.appendChild(idxNumber);
+      if (i === 0) {
+        const idxBadge = document.createElement("span");
+        idxBadge.className = "idx-badge";
+        idxBadge.textContent = "default";
+        v0.appendChild(idxBadge);
+      }
+      c0.appendChild(l0);
+      c0.appendChild(v0);
+
       const c1 = document.createElement("div");
-      const idx = document.createElement("div");
-      idx.className = "idx";
-      idx.textContent = `Index: ${i}${i===0 ? " (default)" : ""}`;
       const l1 = document.createElement("label");
       l1.textContent = "Név";
       const i1 = document.createElement("input");
       i1.value = w.name;
       i1.addEventListener("change", ()=>updateWeightLevel(i, i1.value, i2.value));
-      c1.appendChild(idx);
       c1.appendChild(l1); c1.appendChild(document.createElement("br")); c1.appendChild(i1);
 
       const c2 = document.createElement("div");
       const l2 = document.createElement("label");
       l2.textContent = "Érték";
       const i2 = document.createElement("input");
+      i2.className = "value-input";
       i2.type = "number"; i2.min = "1"; i2.step = "1";
       i2.value = w.value;
       i2.addEventListener("change", ()=>updateWeightLevel(i, i1.value, i2.value));
@@ -1354,19 +1400,19 @@ function normalizeUrl(urlRaw){
       const c3 = document.createElement("div");
       c3.style.display = "flex";
       c3.style.justifyContent = "flex-end";
+      const del = document.createElement("button");
+      del.className = "danger";
+      del.textContent = "Törlés";
       if (i !== 0) {
-        const del = document.createElement("button");
-        del.className = "danger";
-        del.textContent = "Törlés";
         del.addEventListener("click", ()=>deleteWeightLevel(i));
-        c3.appendChild(del);
       } else {
-        const spacer = document.createElement("div");
-        spacer.style.height = "1px";
-        c3.appendChild(spacer);
+        del.style.visibility = "hidden";
+        del.style.pointerEvents = "none";
+        del.setAttribute("aria-hidden", "true");
       }
+      c3.appendChild(del);
 
-      row.appendChild(c1); row.appendChild(c2); row.appendChild(c3);
+      row.appendChild(c0); row.appendChild(c1); row.appendChild(c2); row.appendChild(c3);
       el.weightsList.appendChild(row);
     });
   }
@@ -1435,13 +1481,12 @@ function normalizeUrl(urlRaw){
     if (!all.length) { alert("Nincs mit sorsolni."); return; }
 
     const picks = [];
-    let avoid = state.lastPickedId;
-    for (let k=0;k<3;k++){
-      const chosen = (mode.picker === "uniform") ? pickUniform(all, avoid) : pickWeighted(all, avoid);
+    let source = all.slice();
+    for (let k=0; k<3 && source.length; k++){
+      const chosen = (mode.picker === "uniform") ? pickUniform(source) : pickWeighted(source);
       if (!chosen) break;
-      if (!picks.some(p=>p.id===chosen.id)) picks.push(chosen);
-      avoid = chosen.id;
-      if (picks.length === all.length) break;
+      picks.push(chosen);
+      source = source.filter(item => item.id !== chosen.id);
     }
     state.lastPickedId = picks[0].id;
     el.result.textContent = picks.map(p=>p.name).join(" • ");
