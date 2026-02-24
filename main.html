@@ -62,7 +62,7 @@
 
     main{
       max-width:1200px;margin:0 auto;padding:12px 18px 10px;
-      display:grid;grid-template-columns:1.2fr 0.8fr;gap:14px;
+      display:grid;grid-template-columns:1.3fr 0.7fr;gap:14px;
     }
 
     .card{
@@ -279,16 +279,31 @@
     .tip-title{font-weight: 900; color: var(--text); margin-bottom: 6px;}
     .tip-text{color: var(--muted); opacity: 1; transition: opacity 650ms ease; min-height: 34px;}
     .tip-text.fade-out{ opacity: 0; }
+
+
+#appName {
+  margin: 0;
+}
+
+#appName .title {
+  font-weight: 800; /* nagyon vastag */
+}
+
+#appName .subtitle {
+  font-weight: 400; /* vékonyabb */
+  opacity: 0.7;
+}
   </style>
 </head>
 
 <body>
 <header>
-  <h1 id="appName">PickMyFood</h1>
+  <h1 id="appName">
+    <span class="title">PickMyFood</span>
+    <span class="subtitle">– A döntés a miénk.</span>
+  </h1>
   <div class="sub">
-    <div class="sub-left">
-      Étterem sorsoló • Linkekkel • Kategóriákkal • Súlyszintekkel
-    </div>
+    <div class="sub-left">Nem tudod mit egyél, vagy hova menjetek? Add hozzá a kedvenc éttermeidet, állítsd be az esélyeket, és hagyd, hogy a PickMyFood döntsön helyetted.</div>
     <div class="sub-right">
       <div class="theme-toggle">
         <label for="themeSelect">Téma</label>
@@ -423,7 +438,7 @@
   <div>
     <label for="newCategoryName">Kategória neve</label><br/>
     <input id="newCategoryName" placeholder="pl. pizza / ázsiai / olcsó" style="width:100%;" />
-    <div class="help">Max 30 kategória. A név kisbetűsítve lesz.</div>
+    <div class="help" id="newCategoryHelp"></div>
   </div>
   <div class="divider"></div>
   <div class="toolbar-right" style="justify-content:end;">
@@ -463,7 +478,7 @@
   <div class="divider"></div>
 
   <div class="tagbox">
-    <div><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;">(max 5)</span></div>
+    <div><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;" id="addCatsTitleLimit"></span></div>
     <div class="filters" style="grid-template-columns: 1fr auto auto;">
       <div style="min-width: 240px;">
         <label for="addCategorySelect">Válassz kategóriát</label><br/>
@@ -478,7 +493,7 @@
         <button id="addNewCategoryBtn" class="secondary" style="width:100%;">+ Új kategória</button>
       </div>
     </div>
-    <div class="help">Egy étteremhez legfeljebb 5 kategória állítható be.</div>
+    <div class="help" id="addCatsHelp"></div>
     <div class="tagchips" id="addSelectedCategories" style="margin-top:8px;"></div>
   </div>
 
@@ -516,7 +531,7 @@
   <div class="divider"></div>
 
   <div class="tagbox">
-    <h3><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;">(max 3)</span></h3>
+    <h3><span style="font-weight:900;">Kategóriák</span> <span style="font-weight:400;" id="editCatsTitleLimit"></span></h3>
     <div class="filters" style="grid-template-columns: 1fr auto auto;">
       <div style="min-width: 240px;">
         <label for="editCategorySelect">Válassz kategóriát</label><br/>
@@ -531,7 +546,7 @@
         <button id="editNewCategoryBtn" class="secondary" style="width:100%;">+ Új kategória</button>
       </div>
     </div>
-    <div class="help">Egy étteremhez legfeljebb 3 kategória állítható be.</div>
+    <div class="help" id="editCatsHelp"></div>
     <div class="tagchips" id="editSelectedCategories" style="margin-top:8px;"></div>
   </div>
 
@@ -557,7 +572,7 @@
           <button id="catAddBtn" style="width:100%;">+ Hozzáadás</button>
         </div>
       </div>
-      <div class="help">Max 30 kategória. Törlésnél a kategória lekerül az éttermekről is.</div>
+      <div class="help" id="categoriesHelp"></div>
     </div>
   </div>
   <div class="divider"></div>
@@ -571,7 +586,7 @@
 
 <!-- Manage weights -->
 <dialog id="weightsDialog">
-  <p class="dialog-title">Súlyszintek kezelése (max 5)</p>
+  <p class="dialog-title" id="weightsDialogTitle"></p>
   <div class="help">A sorsolás a szint “értékével” súlyoz. Törlésnél az érintett éttermek Index0-ás (default) súlyszintre állnak.</div>
   <div class="divider"></div>
 
@@ -594,13 +609,16 @@
 
   <div class="divider"></div>
   <div class="toolbar-right" style="justify-content:end;">
-    <button id="weightsResetBtn" class="secondary">Alapértelmezett (3)</button>
+    <button id="weightsResetBtn" class="secondary"></button>
     <button id="weightsCloseBtn">Bezár</button>
   </div>
 </dialog>
 
 <script>
   // Versions (JSON changed because item.url added)
+  const AUTHOR_URL = "https://github.com/AbaiAlex"
+  const COPILOT_URL = "https://github.com/copilot"
+  const REPO_URL = "https://github.com/AbaiAlex/pickmyfood"
   const JSON_VERSION = 1;
   const UI_VERSION = 1;
   const APP_VERSION = `${JSON_VERSION}.${UI_VERSION}`;
@@ -610,7 +628,8 @@
   const APP_SLOGAN = "Mi döntünk. Te eszel.";
   const LEGAL_LINE = "„No warranty.” A kalóriákért nem vállalunk felelősséget.";
 
-  const STORAGE_KEY = "pickmyfood_state_jsonv6";
+  const STORAGE_VERSION = 6;
+  const STORAGE_KEY = `pickmyfood_state_jsonv${STORAGE_VERSION}`;
   const THEME_KEY = "pickmyfood_theme";
 
   const MAX_CATEGORIES = 30;
@@ -642,15 +661,32 @@
     { name: "Újhely", value: 3 },
   ];
 
-  const DEFAULT_CATEGORIES = ["pizza","kínai","hamburger","gyros","magyaros", "szendvics", "vega", "thai", "tészta", "kebab", "desszert", "japán", "sushi", "indiai"];
+  const DEFAULT_WEIGHT_LEVELS_COUNT = DEFAULT_WEIGHT_LEVELS.length;
 
+  const DEFAULT_CATEGORIES = [
+    "pizza",
+    "hamburger",
+    "kínai",
+    "gyros",
+    "kebab",
+    "magyaros",
+    "olasz",
+    "japán",
+    "sushi",
+    "thai",
+    "indiai",
+    "mexikói",
+    "street food",
+    "tészta",
+    "szendvics",
+    "vega",
+    "vegán",
+    "saláta",
+    "desszert",
+    "kávézó"
+  ];
   // item: {id, name, url?, weightLevelIndex, categoryIds, createdAt}
   const DEFAULT_ITEMS = [
-    { id: crypto.randomUUID(), name: "Pizza Forte", url: "", weightLevelIndex: 1, categoryIds: ["pizza","tészta", "desszert"], createdAt: Date.now()-50000 },
-    { id: crypto.randomUUID(), name: "Wasabi", url: "", weightLevelIndex: 0, categoryIds: ["kínai", "thai", "japán", "sushi"], createdAt: Date.now()-40000 },
-    { id: crypto.randomUUID(), name: "Hamburgeres", url: "", weightLevelIndex: 1, categoryIds: ["hamburger"], createdAt: Date.now()-30000 },
-    { id: crypto.randomUUID(), name: "Kínai", url: "", weightLevelIndex: 0, categoryIds: ["kínai"], createdAt: Date.now()-20000 },
-    { id: crypto.randomUUID(), name: "Gyros", url: "", weightLevelIndex: 2, categoryIds: ["gyros"], createdAt: Date.now()-10000 },
   ];
 
   let state = {
@@ -658,6 +694,7 @@
     categories: [],
     weightLevels: [],
     lastPickedId: null,
+    lastPickedCategory: null,
     searchName: "",
     filterCategory: "__ALL__",
     sort: "NAME_ASC",
@@ -693,6 +730,13 @@
     appAuthor: document.getElementById("appAuthor"),
     legalLine: document.getElementById("legalLine"),
     tipText: document.getElementById("tipText"),
+    newCategoryHelp: document.getElementById("newCategoryHelp"),
+    addCatsTitleLimit: document.getElementById("addCatsTitleLimit"),
+    addCatsHelp: document.getElementById("addCatsHelp"),
+    editCatsTitleLimit: document.getElementById("editCatsTitleLimit"),
+    editCatsHelp: document.getElementById("editCatsHelp"),
+    categoriesHelp: document.getElementById("categoriesHelp"),
+    weightsDialogTitle: document.getElementById("weightsDialogTitle"),
 
     // dialogs
     newCategoryDialog: document.getElementById("newCategoryDialog"),
@@ -790,6 +834,7 @@ function normalizeUrl(urlRaw){
       categories: state.categories,
       weightLevels: state.weightLevels,
       lastPickedId: state.lastPickedId,
+      lastPickedCategory: state.lastPickedCategory,
       searchName: state.searchName,
       filterCategory: state.filterCategory,
       sort: state.sort,
@@ -850,6 +895,9 @@ function normalizeUrl(urlRaw){
       state.categories = (m.uniqueCats.length ? m.uniqueCats : DEFAULT_CATEGORIES.slice(0, MAX_CATEGORIES));
       state.weightLevels = (m.wls.length ? m.wls : DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS));
       state.items = (m.items.length ? m.items : DEFAULT_ITEMS.slice());
+      state.lastPickedCategory = (typeof parsed.lastPickedCategory === "string" && parsed.lastPickedCategory)
+        ? parsed.lastPickedCategory
+        : null;
 
       state.categories = Array.from(new Set(state.categories.map(normalizeCategory).filter(Boolean))).slice(0, MAX_CATEGORIES);
       state.weightLevels = state.weightLevels.slice(0, MAX_WEIGHT_LEVELS);
@@ -870,7 +918,11 @@ function normalizeUrl(urlRaw){
 
   function getVisibleListItems(){
     let items = state.items.slice();
-    if (state.filterCategory !== "__ALL__") items = items.filter(i => categoriesOfItem(i).includes(state.filterCategory));
+    if (state.filterCategory === "__NO_CATEGORY__") {
+      items = items.filter(i => categoriesOfItem(i).length === 0);
+    } else if (state.filterCategory !== "__ALL__") {
+      items = items.filter(i => categoriesOfItem(i).includes(state.filterCategory));
+    }
     const q = (state.searchName || "").trim().toLowerCase();
     if (q) items = items.filter(i => i.name.toLowerCase().includes(q));
 
@@ -931,16 +983,24 @@ function normalizeUrl(urlRaw){
     return Array.from(map.values()).sort((a,b)=>a.cat.localeCompare(b.cat,"hu"));
   }
 
-  function pickRandomCategoryByWeight(items){
-    const catsAll = categoriesWithWeights(items);
-    if(!catsAll.length) return null;
-    const total = catsAll.reduce((sum,c)=>sum+c.weightSum,0);
+  function pickWeightedCategoryFromList(catEntries, avoidCat){
+    const eligible = catEntries.filter(c => !avoidCat || c.cat !== avoidCat);
+    const source = eligible.length ? eligible : catEntries;
+    if(!source.length) return null;
+
+    const total = source.reduce((sum,c)=>sum+c.weightSum,0);
     let r = Math.random()*total;
-    for(const c of catsAll){
+    for(const c of source){
       r -= c.weightSum;
       if(r<=0) return c;
     }
-    return catsAll[catsAll.length-1];
+    return source[source.length-1];
+  }
+
+  function pickRandomCategoryByWeight(items, avoidCat){
+    const catsAll = categoriesWithWeights(items);
+    if(!catsAll.length) return null;
+    return pickWeightedCategoryFromList(catsAll, avoidCat);
   }
 
   function renderWeightsLabel(){
@@ -974,19 +1034,24 @@ function normalizeUrl(urlRaw){
   }
 
   function renderFilterCategory(){
+    const usedCategories = sortCats(Array.from(new Set(state.items.flatMap(i => categoriesOfItem(i)))));
     const current = state.filterCategory;
     el.filterCategory.innerHTML = "";
     const all = document.createElement("option");
     all.value = "__ALL__";
     all.textContent = "Összes";
     el.filterCategory.appendChild(all);
-    for (const c of sortCats(state.categories)) {
+    const noCat = document.createElement("option");
+    noCat.value = "__NO_CATEGORY__";
+    noCat.textContent = "Nincs kategória";
+    el.filterCategory.appendChild(noCat);
+    for (const c of usedCategories) {
       const o = document.createElement("option");
       o.value = c;
       o.textContent = c;
       el.filterCategory.appendChild(o);
     }
-    const values = ["__ALL__", ...state.categories];
+    const values = ["__ALL__", "__NO_CATEGORY__", ...usedCategories];
     state.filterCategory = values.includes(current) ? current : "__ALL__";
     el.filterCategory.value = state.filterCategory;
   }
@@ -1120,6 +1185,27 @@ function normalizeUrl(urlRaw){
     el.searchName.value = state.searchName;
     el.sortSelect.value = state.sort;
     saveState();
+  }
+
+  function renderPickedRestaurants(items){
+    el.result.innerHTML = "";
+    items.forEach((item, index) => {
+      const node = document.createElement(item.url ? "a" : "span");
+      node.textContent = item.name;
+
+      if (item.url) {
+        node.classList.add("link");
+        node.href = item.url;
+        node.target = "_blank";
+        node.rel = "noopener noreferrer";
+        node.title = "Rendelési oldal megnyitása";
+      }
+
+      el.result.appendChild(node);
+      if (index < items.length - 1) {
+        el.result.appendChild(document.createTextNode(" • "));
+      }
+    });
   }
 
   // dialogs
@@ -1309,7 +1395,7 @@ function normalizeUrl(urlRaw){
 
   // weight management
   function addWeightLevel(nameRaw, valueRaw){
-    if (state.weightLevels.length >= MAX_WEIGHT_LEVELS) { alert("Max 5 súlyszint lehet."); return false; }
+    if (state.weightLevels.length >= MAX_WEIGHT_LEVELS) { alert(`Max ${MAX_WEIGHT_LEVELS} súlyszint lehet.`); return false; }
     const name = (nameRaw||"").toString().trim();
     if (!name) { alert("A súlyszint neve nem lehet üres."); return false; }
     const value = clampInt(valueRaw, 1, 999);
@@ -1341,7 +1427,7 @@ function normalizeUrl(urlRaw){
     rerender();
   }
   function resetWeightLevels(){
-    if (!confirm("Visszaállítod az alapértelmezett 3 súlyszintet?")) return;
+    if (!confirm(`Visszaállítod az alapértelmezett ${DEFAULT_WEIGHT_LEVELS_COUNT} súlyszintet?`)) return;
     state.weightLevels = DEFAULT_WEIGHT_LEVELS.slice(0, MAX_WEIGHT_LEVELS);
     state.items = state.items.map(it => ({
       ...it,
@@ -1437,16 +1523,20 @@ function normalizeUrl(urlRaw){
     const mode = buildPoolForMode();
     if (mode.kind === "error") { alert(mode.message); return; }
     if (mode.kind === "category") {
-      const picked = pickRandomCategoryByWeight(mode.pool);
+      const picked = pickRandomCategoryByWeight(mode.pool, state.lastPickedCategory);
       if (!picked) { alert("Nincs kategória hozzárendelve egyetlen étteremhez sem."); return; }
+      state.lastPickedCategory = picked.cat;
+      state.lastPickedId = null;
       el.result.textContent = picked.cat;
       el.resultMeta.textContent = `${mode.meta} • Elemszám: ${picked.count}`;
+      saveState();
       return;
     }
     const chosen = (mode.picker === "uniform") ? pickUniform(mode.pool, avoid) : pickWeighted(mode.pool, avoid);
     if (!chosen) { alert("Nincs mit sorsolni."); return; }
     state.lastPickedId = chosen.id;
-    el.result.textContent = chosen.name;
+    state.lastPickedCategory = null;
+    renderPickedRestaurants([chosen]);
     const cats = categoriesOfItem(chosen);
     el.resultMeta.textContent = `${mode.meta} • Súly: ${weightNameOfItem(chosen)} • Kategóriák: ${cats.length?cats.join(", "):"—"}${chosen.url ? " • Link: van" : ""}`;
     saveState();
@@ -1461,19 +1551,17 @@ function normalizeUrl(urlRaw){
       const picked = [];
       let source = catsAll.slice();
       for (let k=0;k<3 && source.length;k++){
-        const total = source.reduce((sum,c)=>sum+c.weightSum,0);
-        let r = Math.random()*total;
-        let idx = 0;
-        for (; idx<source.length; idx++){
-          r -= source[idx].weightSum;
-          if (r<=0) break;
-        }
-        const c = source[Math.min(idx, source.length-1)];
+        const avoidCat = (k === 0) ? state.lastPickedCategory : null;
+        const c = pickWeightedCategoryFromList(source, avoidCat);
+        if (!c) break;
         picked.push(c.cat);
         source = source.filter(x => x.cat !== c.cat);
       }
+      if (picked.length) state.lastPickedCategory = picked[0];
+      state.lastPickedId = null;
       el.result.textContent = picked.join(" • ");
       el.resultMeta.textContent = `${mode.meta} • 3 javaslat`;
+      saveState();
       return;
     }
 
@@ -1489,7 +1577,8 @@ function normalizeUrl(urlRaw){
       source = source.filter(item => item.id !== chosen.id);
     }
     state.lastPickedId = picks[0].id;
-    el.result.textContent = picks.map(p=>p.name).join(" • ");
+    state.lastPickedCategory = null;
+    renderPickedRestaurants(picks);
     el.resultMeta.textContent = `${mode.meta} • 3 javaslat`;
     saveState();
   }
@@ -1498,10 +1587,8 @@ function normalizeUrl(urlRaw){
   function exportJSON(){
     const payload = {
       jsonVersion: JSON_VERSION,
-      uiVersion: UI_VERSION,
-      appVersion: APP_VERSION,
+      repository: REPO_URL,
       exportedAt: new Date().toISOString(),
-      app: { name: APP_NAME, author: APP_AUTHOR },
       categories: state.categories,
       weightLevels: state.weightLevels,
       items: state.items
@@ -1543,6 +1630,7 @@ function normalizeUrl(urlRaw){
         }));
 
         state.lastPickedId = null;
+        state.lastPickedCategory = null;
         state.searchName = "";
         state.filterCategory = "__ALL__";
         state.sort = "NAME_ASC";
@@ -1563,6 +1651,7 @@ function normalizeUrl(urlRaw){
     if(!confirm("Biztosan törlöd az egész listát?")) return;
     state.items = [];
     state.lastPickedId = null;
+    state.lastPickedCategory = null;
     state.searchName = "";
     state.filterCategory = "__ALL__";
     state.sort = "NAME_ASC";
@@ -1613,6 +1702,17 @@ function normalizeUrl(urlRaw){
     el.appVersion.textContent = `v${APP_VERSION}`;
     el.appAuthor.textContent = APP_AUTHOR;
     el.legalLine.textContent = LEGAL_LINE;
+  }
+
+  function setStaticTexts(){
+    el.newCategoryHelp.textContent = `Max ${MAX_CATEGORIES} kategória. A név kisbetűsítve lesz.`;
+    el.addCatsTitleLimit.textContent = `(max ${MAX_CATEGORIES_PER_RESTAURANT})`;
+    el.addCatsHelp.textContent = `Egy étteremhez legfeljebb ${MAX_CATEGORIES_PER_RESTAURANT} kategória állítható be.`;
+    el.editCatsTitleLimit.textContent = `(max ${MAX_CATEGORIES_PER_RESTAURANT})`;
+    el.editCatsHelp.textContent = `Egy étteremhez legfeljebb ${MAX_CATEGORIES_PER_RESTAURANT} kategória állítható be.`;
+    el.categoriesHelp.textContent = `Max ${MAX_CATEGORIES} kategória. Törlésnél a kategória lekerül az éttermekről is.`;
+    el.weightsDialogTitle.textContent = `Súlyszintek kezelése (max ${MAX_WEIGHT_LEVELS})`;
+    el.weightsResetBtn.textContent = `Alapértelmezett (${DEFAULT_WEIGHT_LEVELS_COUNT})`;
   }
 
   // pick mode UI + dialogs openers etc
@@ -1708,6 +1808,7 @@ function normalizeUrl(urlRaw){
   }));
 
   setFooter();
+  setStaticTexts();
   startTips();
   rerender();
 </script>
